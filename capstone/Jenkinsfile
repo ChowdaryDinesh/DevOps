@@ -59,7 +59,7 @@ pipeline {
             steps {
                 script {
                     // Fetch EC2 instance IP from Terraform output
-                    def instance_ip = sh(script: 'terraform -chdir=terraform output -raw instance_ip', returnStdout: true).trim()
+                    def instance_ip = sh(script: 'terraform -chdir=capstone/ec2_instance output -raw public_ip', returnStdout: true).trim()
                     
                     // Connect to EC2 instance and deploy app
                     writeFile file: 'ec2-key.pem', text: SSH_PRIVATE_KEY
