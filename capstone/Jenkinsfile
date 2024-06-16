@@ -1,0 +1,83 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(name: 'ENVIRONMENT', choices: ['dev', 'test', 'prod'], description: 'Select deployment environment')
+        string(name: 'AWS_CREDENTIALS_ID', defaultValue: 'aws1', description: 'AWS Credentials ID in Jenkins')
+    }
+
+    environment {
+        TERRAFORM_REPO = 'https://github.com/ChowdaryDinesh/DevOps.git'
+        APP_REPO = 'https://github.com/ChowdaryDinesh/DevOps.git'
+        SSH_PRIVATE_KEY = credentials('ssh_aws1')
+    }
+
+    stages {
+        stage('Clone Repositories') {
+            steps {
+                script {
+                    // Clone Terraform code
+                    git url: "${env.TERRAFORM_REPO}", branch: 'main'
+
+                    // Clone Application code into Terraform repo directory
+                    dir('capstone/ec2_instance') {
+                        git url: "${env.APP_REPO}", branch: 'main'
+                    }
+                }
+            }
+        }
+
+        stage('Initialize Terraform') {
+            steps {
+                withAWS(credentials: "${params.AWS_CREDENTIALS_ID}", region: 'us-west-2') {
+                    dir('capstone/ec2_instance') {
+                        sh 'terraform init'
+                    }
+                }
+            }
+        }
+
+        stage('Apply Terraform') {
+            steps {
+                withAWS(credentials: "${params.AWS_CREDENTIALS_ID}", region: 'us-west-2') {
+                    dir('terraform') {
+                        sh 'terraform apply -auto-approve'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                script {
+                    // Fetch EC2 instance IP from Terraform output
+                    def instance_ip = sh(script: 'terraform -chdir=terraform output -raw instance_ip', returnStdout: true).trim()
+                    
+                    // Connect to EC2 instance and deploy app
+                    writeFile file: 'ec2-key.pem', text: SSH_PRIVATE_KEY
+                    sh 'chmod 600 ec2-key.pem'
+                    sh """
+                    ssh -i ec2-key.pem -o StrictHostKeyChecking=no ubuntu@${instance_ip} << EOF
+                        cd /home/ubuntu/DevOps/capstone/sample_python
+                        sudo docker-compose -f docker-compose.${params.ENVIRONMENT}.yml pull
+                        sudo docker-compose -f docker-compose.${params.ENVIRONMENT}.yml up -d
+                    EOF
+                    """
+                    sh 'rm ec2-key.pem'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution completed.'
+        }
+        success {
+            echo 'Pipeline executed successfully.'
+        }
+        failure {
+            echo 'Pipeline execution failed.'
+        }
+    }
+}
