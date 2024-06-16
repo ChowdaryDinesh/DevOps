@@ -53,7 +53,7 @@ pipeline {
                         [ $class: 'StringBinding', credentialsId: 'aws-session-token', variable: 'AWS_SESSION_TOKEN' ]
                     ]) {
                     dir('capstone/ec2_instance') {
-                        sh 'terraform apply -auto-approve'
+                        sh 'terraform apply -var=\"app=${params.app}\" -auto-approve'
                     }
                 }
             }

@@ -30,3 +30,7 @@ variable "env" {
 variable "create_new_keypair" {
   default = false
 }
+
+variable "app" {
+  default = "jenkins"
+}

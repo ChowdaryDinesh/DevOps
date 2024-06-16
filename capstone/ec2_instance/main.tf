@@ -70,6 +70,19 @@ resource "aws_security_group" "sg" {
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
+    ingress {
+        from_port = 8000
+        to_port = 8000
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    
+    ingress {
+        from_port = 8080
+        to_port = 8080
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
 }
 
 
@@ -129,7 +142,7 @@ resource "aws_instance" "ec2_instance" {
     EOF
     tags = {
       User = "test-user"
-      Name = "test-1"
+      Name = "test-instance-${var.app}"
       env = var.env
     }
     connection {
