@@ -66,8 +66,7 @@ pipeline {
                     sh """
                     ssh -i capstone/ec2_instance/Key.pem -o StrictHostKeyChecking=no ubuntu@${instance_ip} << EOF
                         cd /home/ubuntu/DevOps/capstone/sample_python
-                        sudo docker-compose -f docker-compose.${params.ENVIRONMENT}.yml pull
-                        sudo docker-compose -f docker-compose.${params.ENVIRONMENT}.yml up -d
+                        sudo docker-compose -f docker-compose.yml up
                     EOF
                     """
                     sh 'rm ec2-key.pem'
