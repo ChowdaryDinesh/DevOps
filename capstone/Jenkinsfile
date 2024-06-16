@@ -62,10 +62,9 @@ pipeline {
                     def instance_ip = sh(script: 'terraform -chdir=capstone/ec2_instance output -raw public_ip', returnStdout: true).trim()
                     
                     // Connect to EC2 instance and deploy app
-                    writeFile file: 'ec2-key.pem', text: SSH_PRIVATE_KEY
-                    sh 'chmod 600 ec2-key.pem'
+                    sh 'chmod 400 Key.pem'
                     sh """
-                    ssh -i ec2-key.pem -o StrictHostKeyChecking=no ubuntu@${instance_ip} << EOF
+                    ssh -i Key.pem -o StrictHostKeyChecking=no ubuntu@${instance_ip} << EOF
                         cd /home/ubuntu/DevOps/capstone/sample_python
                         sudo docker-compose -f docker-compose.${params.ENVIRONMENT}.yml pull
                         sudo docker-compose -f docker-compose.${params.ENVIRONMENT}.yml up -d
