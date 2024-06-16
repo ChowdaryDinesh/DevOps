@@ -4,6 +4,7 @@ pipeline {
     parameters {
         choice(name: 'ENVIRONMENT', choices: ['dev', 'test', 'prod'], description: 'Select deployment environment')
         string(name: 'AWS_CREDENTIALS_ID', defaultValue: 'aws1', description: 'AWS Credentials ID in Jenkins')
+        choice(name: 'Destroy', choices: ['yes', 'no'])
     }
 
     environment {
@@ -71,6 +72,19 @@ pipeline {
                     EOF
                     """
                     sh 'rm ec2-key.pem'
+                }
+            }
+        }
+        stage('Destroy Application'){
+            if (params.Destroy == 'yes') {
+                withCredentials([
+                    [ $class: 'StringBinding', credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'],
+                    [ $class: 'StringBinding', credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY' ],
+                    [ $class: 'StringBinding', credentialsId: 'aws-session-token', variable: 'AWS_SESSION_TOKEN' ]
+                ]) {
+                    dir('capstone/ec2_instance') {
+                        sh 'terraform destroy -auto-approve'
+                    }
                 }
             }
         }
