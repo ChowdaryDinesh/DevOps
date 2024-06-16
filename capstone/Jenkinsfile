@@ -74,16 +74,19 @@ pipeline {
                     // Connect to EC2 instance and deploy app
                     sh 'chmod 400 capstone/ec2_instance/Key.pem'
                     sh """
-                    ssh -i capstone/ec2_instance/Key.pem -o StrictHostKeyChecking=no ubuntu@${instance_ip} << EOF
-                        git clone https://github.com/ChowdaryDinesh/DevOps.git
+                    ssh -i capstone/ec2_instance/Key.pem -o StrictHostKeyChecking=no ubuntu@${instance_ip} << 'EOF'
+                        if [ ! -d "/home/ubuntu/DevOps" ]; then
+                            git clone https://github.com/ChowdaryDinesh/DevOps.git /home/ubuntu/DevOps
+                        fi
                         cd /home/ubuntu/DevOps/capstone/sample_python
                         sudo docker-compose -f docker-compose.yml up -d
                     EOF
                     """
-                    sh 'rm ec2-key.pem'
+                    sh 'rm capstone/ec2_instance/Key.pem'
                 }
             }
         }
+
 
         stage('Destroy Application') {
             when {
