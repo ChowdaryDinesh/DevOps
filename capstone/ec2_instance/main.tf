@@ -138,6 +138,7 @@ resource "aws_instance" "ec2_instance" {
     sudo systemctl enable docker
     docker --version
     sudo apt install git -y
+    sudo apt install docker-compose -y
 
     EOF
     tags = {
