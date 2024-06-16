@@ -22,10 +22,7 @@ pipeline {
                     // Clone Terraform code
                     git url: "${env.TERRAFORM_REPO}", branch: 'main'
 
-                    // Clone Application code into Terraform repo directory
-                    dir('capstone/ec2_instance') {
-                        git url: "${env.APP_REPO}", branch: 'main'
-                    }
+                    
                 }
             }
         }
@@ -33,7 +30,8 @@ pipeline {
         stage('Initialize Terraform') {
             steps {
                 withCredentials([
-                        [ $class: 'UsernamePasswordMultiBinding', credentialsId: 'aws-access-key-id', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY' ],
+                        [ $class: 'StringBinding', credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'],
+                        [ $class: 'StringBinding', credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY' ],
                         [ $class: 'StringBinding', credentialsId: 'aws-session-token', variable: 'AWS_SESSION_TOKEN' ]
                     ]) {
                     dir('capstone/ec2_instance') {
@@ -46,7 +44,8 @@ pipeline {
         stage('Apply Terraform') {
             steps {
                withCredentials([
-                        [ $class: 'UsernamePasswordMultiBinding', credentialsId: 'aws-access-key-id', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY' ],
+                       [ $class: 'StringBinding', credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'],
+                        [ $class: 'StringBinding', credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY' ],
                         [ $class: 'StringBinding', credentialsId: 'aws-session-token', variable: 'AWS_SESSION_TOKEN' ]
                     ]) {
                     dir('capstone/ec2_instance') {
