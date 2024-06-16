@@ -75,19 +75,32 @@ pipeline {
                 }
             }
         }
-        stage('Destroy Application'){
-            if (params.Destroy == 'yes') {
-                withCredentials([
-                    [ $class: 'StringBinding', credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'],
-                    [ $class: 'StringBinding', credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY' ],
-                    [ $class: 'StringBinding', credentialsId: 'aws-session-token', variable: 'AWS_SESSION_TOKEN' ]
-                ]) {
-                    dir('capstone/ec2_instance') {
-                        sh 'terraform destroy -auto-approve'
+
+        stage('Destroy Application') {
+            when {
+                expression { params.Destroy == 'yes' }
+            }
+            steps {
+                script {
+                    withCredentials([
+                        [ $class: 'StringBinding', credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'],
+                        [ $class: 'StringBinding', credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY' ],
+                        [ $class: 'StringBinding', credentialsId: 'aws-session-token', variable: 'AWS_SESSION_TOKEN' ]
+                    ]) {
+                        try {
+                            dir('capstone/ec2_instance') {
+                                sh 'terraform destroy -auto-approve'
+                            }
+                        } catch (Exception e) {
+                            // Handle any exceptions during Terraform destroy
+                            echo "Failed to destroy resources: ${e.message}"
+                            currentBuild.result = 'FAILURE'
+                        }
                     }
                 }
-            }
-        }
+    }
+}
+
     }
 
     post {
