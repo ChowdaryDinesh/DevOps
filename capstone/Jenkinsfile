@@ -4,7 +4,7 @@ pipeline {
     parameters {
         choice(name: 'ENVIRONMENT', choices: ['dev', 'test', 'prod'], description: 'Select deployment environment')
         string(name: 'AWS_CREDENTIALS_ID', defaultValue: 'aws1', description: 'AWS Credentials ID in Jenkins')
-        choice(name: 'Destroy', choices: ['yes', 'no']),
+        choice(name: 'Destroy', choices: ['yes', 'no'])
         string(name: 'app', defaultValue: 'pythonapp', description: 'App name')
     }
 
