@@ -93,7 +93,7 @@ resource "aws_eip_association" "eipa" {
 
 resource "aws_key_pair" "private_key" {
     key_name = "key"
-    public_key = file("key.pub")
+    public_key = file("Key.pub")
 }
 
 resource "aws_instance" "ec2_instance" {
