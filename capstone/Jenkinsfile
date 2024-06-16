@@ -9,7 +9,10 @@ pipeline {
     environment {
         TERRAFORM_REPO = 'https://github.com/ChowdaryDinesh/DevOps.git'
         APP_REPO = 'https://github.com/ChowdaryDinesh/DevOps.git'
-        SSH_PRIVATE_KEY = credentials('ssh_aws1')
+        SSH_PRIVATE_KEY = credentials('aws1_ssh')
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+        AWS_SESSION_TOKEN     = credentials('aws-session-token')
     }
 
     stages {
@@ -29,7 +32,10 @@ pipeline {
 
         stage('Initialize Terraform') {
             steps {
-                withAWS(credentials: "${params.AWS_CREDENTIALS_ID}", region: 'us-west-2') {
+                withCredentials([
+                        [ $class: 'UsernamePasswordMultiBinding', credentialsId: 'aws-access-key-id', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY' ],
+                        [ $class: 'StringBinding', credentialsId: 'aws-session-token', variable: 'AWS_SESSION_TOKEN' ]
+                    ]) {
                     dir('capstone/ec2_instance') {
                         sh 'terraform init'
                     }
@@ -39,8 +45,11 @@ pipeline {
 
         stage('Apply Terraform') {
             steps {
-                withAWS(credentials: "${params.AWS_CREDENTIALS_ID}", region: 'us-west-2') {
-                    dir('terraform') {
+               withCredentials([
+                        [ $class: 'UsernamePasswordMultiBinding', credentialsId: 'aws-access-key-id', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY' ],
+                        [ $class: 'StringBinding', credentialsId: 'aws-session-token', variable: 'AWS_SESSION_TOKEN' ]
+                    ]) {
+                    dir('capstone/ec2_instance') {
                         sh 'terraform apply -auto-approve'
                     }
                 }
