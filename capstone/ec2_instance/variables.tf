@@ -27,3 +27,6 @@ variable "env" {
   default = "dev"
   
 }
+variable "create_new_keypair" {
+  default = false
+}

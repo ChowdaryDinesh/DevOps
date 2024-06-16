@@ -92,13 +92,14 @@ resource "aws_eip_association" "eipa" {
 }
 
 resource "aws_key_pair" "private_key" {
+    count      = var.create_new_keypair ? 1 : 0
     key_name = "key"
     public_key = file("Key1.pub")
 }
 
 resource "aws_instance" "ec2_instance" {
     instance_type = var.instance_type
-    key_name = aws_key_pair.private_key.key_name
+    key_name = var.create_new_keypair ? aws_key_pair.private_key[0].key_name : "key"
     ami = var.ami_id
     network_interface {
         device_index = 0
