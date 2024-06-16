@@ -125,7 +125,6 @@ resource "aws_instance" "ec2_instance" {
     sudo systemctl enable docker
     docker --version
     sudo apt install git -y
-    git clone https://github.com/ChowdaryDinesh/DevOps.git
 
     EOF
     tags = {

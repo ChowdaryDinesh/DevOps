@@ -65,6 +65,7 @@ pipeline {
                     sh 'chmod 400 capstone/ec2_instance/Key.pem'
                     sh """
                     ssh -i capstone/ec2_instance/Key.pem -o StrictHostKeyChecking=no ubuntu@${instance_ip} << EOF
+                        git clone https://github.com/ChowdaryDinesh/DevOps.git
                         cd /home/ubuntu/DevOps/capstone/sample_python
                         sudo docker-compose -f docker-compose.yml up
                     EOF
