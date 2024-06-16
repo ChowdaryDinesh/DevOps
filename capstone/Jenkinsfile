@@ -63,29 +63,29 @@ pipeline {
         }
 
         stage('Deploy Application') {
-            when {
-                expression { params.Destroy == 'no' }
-            }
-            steps {
-                script {
-                    // Fetch EC2 instance IP from Terraform output
-                    def instance_ip = sh(script: 'terraform -chdir=capstone/ec2_instance output -raw public_ip', returnStdout: true).trim()
-                    
-                    // Connect to EC2 instance and deploy app
-                    sh 'chmod 400 capstone/ec2_instance/Key.pem'
-                    sh """
-                    ssh -i capstone/ec2_instance/Key.pem -o StrictHostKeyChecking=no ubuntu@${instance_ip} << EOF
-                        if [ ! -d "/home/ubuntu/DevOps" ]; then
-                            git clone https://github.com/ChowdaryDinesh/DevOps.git /home/ubuntu/DevOps
-                        fi
-                        cd /home/ubuntu/DevOps/capstone/sample_python
-                        sudo docker-compose -f docker-compose.yml up -d
-                    EOF
-                    """
-                    sh 'rm capstone/ec2_instance/Key.pem'
-                }
-            }
+    when {
+        expression { params.Destroy == 'no' }
+    }
+    steps {
+        script {
+            // Fetch EC2 instance IP from Terraform output
+            def instance_ip = sh(script: 'terraform -chdir=capstone/ec2_instance output -raw public_ip', returnStdout: true).trim()
+            
+            // Connect to EC2 instance and deploy app
+            sh "chmod 400 capstone/ec2_instance/Key.pem"
+            sh """
+            ssh -i capstone/ec2_instance/Key.pem -o StrictHostKeyChecking=no ubuntu@${instance_ip} 'bash -s' << 'EOF'
+                if [ ! -d "/home/ubuntu/DevOps" ]; then
+                    git clone https://github.com/ChowdaryDinesh/DevOps.git /home/ubuntu/DevOps
+                fi
+                cd /home/ubuntu/DevOps/capstone/sample_python
+                sudo docker-compose -f docker-compose.yml up -d
+            EOF
+            """
+            sh "rm capstone/ec2_instance/Key.pem"
         }
+    }
+}
 
 
         stage('Destroy Application') {
