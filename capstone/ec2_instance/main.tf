@@ -13,6 +13,7 @@ resource "aws_subnet" "name" {
     tags = {
         Name = var.subnet_cidr[count.index]["name"]
     }
+    availability_zone = "us-east-1a"
 }
 
 resource "aws_internet_gateway" "igw1" {
@@ -24,6 +25,7 @@ resource "aws_internet_gateway" "igw1" {
 
 resource "aws_route_table" "rt_table" {
     vpc_id = aws_vpc.my_vpc.id
+
     route {
         cidr_block = "0.0.0.0/0"
         gateway_id = aws_internet_gateway.igw1.id
@@ -112,35 +114,14 @@ resource "aws_key_pair" "private_key" {
 
 resource "aws_instance" "ec2_instance" {
     instance_type = var.instance_type
-    key_name = var.create_new_keypair ? aws_key_pair.private_key[0].key_name : "key"
+    key_name = var.create_new_keypair ? aws_key_pair.private_key[0].key_name : "Key.pem"
     ami = var.ami_id
     network_interface {
         device_index = 0
         network_interface_id = aws_network_interface.ni_1[0].id
     }
 
-    user_data = <<-EOF
-    #!/bin/bash
-    sudo apt-get update -y
-    sudo apt-get install -y \
-            ca-certificates \
-            curl \
-            gnupg \
-            lsb-release
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-        $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt-get update -y
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-    sudo systemctl start docker
-    sudo usermod -aG docker ubuntu
-    sudo systemctl enable docker
-    docker --version
-    sudo apt install git -y
-    sudo apt install docker-compose -y
-
-    EOF
+    user_data = templatefile("${path.module}/${var.app}.sh", {})
     tags = {
       User = "test-user"
       Name = "test-instance-${var.app}"
