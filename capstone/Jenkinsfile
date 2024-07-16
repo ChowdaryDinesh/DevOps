@@ -79,7 +79,7 @@ pipeline {
                     git clone https://github.com/ChowdaryDinesh/DevOps.git /home/ubuntu/DevOps
                 fi
                 cd /home/ubuntu/DevOps/capstone/sample_python
-                sudo docker-compose -f docker-compose.yml up --scale 2 -d
+                sudo docker-compose -f docker-compose.yml up --scale server=2 -d
             EOF
             """
             sh "rm capstone/ec2_instance/Key.pem"
