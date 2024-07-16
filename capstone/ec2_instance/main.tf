@@ -114,7 +114,7 @@ resource "aws_key_pair" "private_key" {
 
 resource "aws_instance" "ec2_instance" {
     instance_type = var.instance_type
-    key_name = var.create_new_keypair ? aws_key_pair.private_key[0].key_name : "Key.pem"
+    key_name = var.create_new_keypair ? aws_key_pair.private_key[0].key_name : "key"
     ami = var.ami_id
     network_interface {
         device_index = 0
